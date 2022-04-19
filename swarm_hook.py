@@ -83,6 +83,11 @@ def swarm_SGD_hook(
         input_tensor = torch.mean(torch.stack([bucket.buffer(), receive_tensor]), 0)
     
     fut.set_result(input_tensor)
+    
+    if bucket.is_last():
+        state.selected_workers[0] = (state.selected_workers[0] + 1) % dist.get_world_size()
+        state.selected_workers[1] = (state.selected_workers[1] + 1) % dist.get_world_size()
+        
     return fut
     
 def update_selected_workers():
