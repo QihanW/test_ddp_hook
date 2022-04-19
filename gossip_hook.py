@@ -73,21 +73,15 @@ def gossip_SGD_hook(
         input_tensor = torch.mean(torch.stack([bucket.buffer(), receive_tensor]), 0)
     
     fut.set_result(input_tensor)
+	
+    size = dist.get_world_size()
+    peers = [[0 for i in range(1)] for i in range(size)]
+    if dist.get_rank() == 0:
+        sp = gpeer.SelectedPeers(rank=dist.get_rank(), size=size, pnum=1)
+        sp.shuffle_peers()
+        peers = sp.get_peers_list()
+    dist.broadcast_object_list(peers, src=0)
+    state.selected_workers = peers
+	
     return fut
-    # Run allreduce using `global_group_to_use` in the first `start_localSGD_iter` iterations.
-    #if state.iter < state.start_localSGD_iter:
-    #    state.maybe_increase_iter(bucket)
-    #    return default._allreduce_fut(global_group_to_use, input_tensor)
-
-    # Run allreduce using `subgroup` after the first `start_localSGD_iter` iterations.
-    # Note that by default, a separate subgroup for each node is created which
-    # causes an intra-node allreduce to be done at each training step.
-    # From this moment, model averaging should run after the optimizer step,
-    # to globally allreduce all the parameters.
-    #if state.subgroup is None:
-    #    state.subgroup, _ = dist.new_subgroups()
-    #dist.barrier()
-    #return default._allreduce_fut(state.subgroup, input_tensor)
-    #con_buf = [torch.zeros(input_tensor.size()).to(self.device) for _ in range(dist.get_world_size())] # Parameters placeholder
-	#dist.all_gather(con_buf, input_tensor, group=global_group_to_use).get_future()
-    #bucket.buffer() = (con_buf[0] + input_tensor) / 2
+    
