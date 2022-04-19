@@ -85,8 +85,15 @@ def swarm_SGD_hook(
     fut.set_result(input_tensor)
     
     if bucket.is_last():
-        state.selected_workers[0] = (state.selected_workers[0] + 1) % dist.get_world_size()
-        state.selected_workers[1] = (state.selected_workers[1] + 1) % dist.get_world_size()
+        if bucket.is_last():
+        #state.iter += 1
+        samples = [i for i in range(dist.get_world_size())]
+        num = [random.choice(samples)]
+        dist.broadcast_object_list(num, src=0)
+        state.selected_workers[0] = (state.selected_workers[0] + num[0]) % dist.get_world_size()
+        state.selected_workers[1] = (state.selected_workers[1] + num[0]) % dist.get_world_size()
+        #state.selected_workers[0] = (state.selected_workers[0] + 1) % dist.get_world_size()
+        #state.selected_workers[1] = (state.selected_workers[1] + 1) % dist.get_world_size()
         
     return fut
     
