@@ -9,7 +9,7 @@ import torch.distributed.algorithms.ddp_comm_hooks.default_hooks as default
 logger = logging.getLogger(__name__)
 
 
-class GossipSGDState(object):
+class RandomSGDState(object):
 
     __slots__ = [
         "process_group",
@@ -45,13 +45,13 @@ class GossipSGDState(object):
         self.iter = 0
 
 
-def gossip_SGD_hook(
-    state: GossipSGDState, bucket: dist.GradBucket
+def random_SGD_hook(
+    state: RandomSGDState, bucket: dist.GradBucket
 ) -> torch.futures.Future[torch.Tensor]:
     """
     Example
-        state = gossip_hook.GossipSGDState(process_group=None, subgroup=None, selected_workers=None)
-        ddp_model.register_comm_hook(state, gossip_hook.gossip_SGD_hook)
+        state = gossip_hook.RandomSGDState(process_group=None, subgroup=None, selected_workers=None)
+        ddp_model.register_comm_hook(state, random_hook.random_SGD_hook)
     """
     global_group_to_use = (
         state.process_group if state.process_group is not None else dist.group.WORLD
