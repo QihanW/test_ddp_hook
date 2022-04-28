@@ -50,7 +50,7 @@ def random_SGD_hook(
 ) -> torch.futures.Future[torch.Tensor]:
     """
     Example
-        state = gossip_hook.RandomSGDState(process_group=None, subgroup=None, selected_workers=None)
+        state = random_hook.RandomSGDState(process_group=None, subgroup=None, selected_workers=None)
         ddp_model.register_comm_hook(state, random_hook.random_SGD_hook)
     """
     global_group_to_use = (
